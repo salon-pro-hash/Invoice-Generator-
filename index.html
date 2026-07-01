@@ -1,0 +1,1360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Invoice Generator — Create Professional Invoices Free Online</title>
+<meta name="description" content="Invoice Generator is a free, premium browser-based tool for freelancers and businesses to create, save, and download professional HD invoices as PDF. No sign-up required.">
+<meta name="keywords" content="invoice generator, free invoice maker, create invoice online, invoice PDF download, small business invoicing, freelance invoice tool">
+<meta name="author" content="Invoice Generator">
+<meta name="robots" content="index, follow">
+<meta property="og:title" content="Invoice Generator — Create Professional Invoices Free Online">
+<meta property="og:description" content="Create, save, and download premium HD invoices in seconds. Free, fast, and works entirely in your browser.">
+<meta property="og:type" content="website">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+/* ============ TOKENS ============ */
+:root{
+  --ink:#0a0a0a;
+  --ink-soft:#171717;
+  --paper:#faf9f6;
+  --paper-alt:#f2f0ea;
+  --gold:#c9a961;
+  --gold-bright:#e8c874;
+  --gold-deep:#9c7c3f;
+  --line:rgba(10,10,10,0.10);
+  --line-strong:rgba(10,10,10,0.16);
+  --text:#141311;
+  --text-muted:#6b6558;
+  --white:#ffffff;
+  --shadow-sm:0 1px 2px rgba(10,10,10,.06);
+  --shadow-md:0 8px 24px -8px rgba(10,10,10,.16);
+  --shadow-lg:0 24px 60px -16px rgba(10,10,10,.28);
+  --gold-grad:linear-gradient(135deg,#d9b76a 0%,#c9a961 45%,#a9843f 100%);
+  --radius:16px;
+  --radius-sm:10px;
+  --radius-lg:24px;
+  --font-display:'Fraunces',serif;
+  --font-body:'Inter',sans-serif;
+  --font-mono:'JetBrains Mono',monospace;
+}
+[data-theme="dark"]{
+  --ink:#faf9f6;
+  --paper:#0b0b0a;
+  --paper-alt:#141311;
+  --line:rgba(250,249,246,0.10);
+  --line-strong:rgba(250,249,246,0.18);
+  --text:#f2efe8;
+  --text-muted:#a39d8c;
+  --white:#151412;
+  --shadow-sm:0 1px 2px rgba(0,0,0,.4);
+  --shadow-md:0 8px 24px -8px rgba(0,0,0,.6);
+  --shadow-lg:0 24px 60px -16px rgba(0,0,0,.7);
+}
+*{box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  margin:0;
+  background:var(--paper);
+  color:var(--text);
+  font-family:var(--font-body);
+  transition:background .4s ease,color .4s ease;
+  -webkit-font-smoothing:antialiased;
+}
+::selection{background:var(--gold);color:#0a0a0a;}
+::-webkit-scrollbar{width:10px;height:10px;}
+::-webkit-scrollbar-thumb{background:var(--line-strong);border-radius:10px;}
+::-webkit-scrollbar-track{background:transparent;}
+h1,h2,h3,h4{font-family:var(--font-display);font-weight:600;margin:0;letter-spacing:-0.01em;}
+p{margin:0;}
+a{color:inherit;}
+button{font-family:var(--font-body);cursor:pointer;}
+input,select,textarea{font-family:var(--font-body);}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.001ms !important;transition-duration:.001ms !important;}}
+
+/* ============ LAYOUT SHELL ============ */
+.topbar{
+  position:sticky;top:0;z-index:60;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:16px 32px;
+  background:color-mix(in srgb, var(--paper) 82%, transparent);
+  backdrop-filter:blur(18px) saturate(140%);
+  -webkit-backdrop-filter:blur(18px) saturate(140%);
+  border-bottom:1px solid var(--line);
+}
+.brand{display:flex;align-items:center;gap:12px;}
+.brand-mark{
+  width:38px;height:38px;border-radius:11px;
+  background:var(--gold-grad);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-display);font-weight:700;color:#171308;font-size:18px;
+  box-shadow:var(--shadow-sm);
+}
+.brand-text h1{font-size:19px;line-height:1;}
+.brand-text span{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-muted);}
+.topbar-actions{display:flex;align-items:center;gap:10px;}
+
+.btn{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:10px 18px;border-radius:999px;border:1px solid var(--line-strong);
+  background:var(--white);color:var(--text);font-size:13.5px;font-weight:600;
+  transition:transform .18s ease, box-shadow .18s ease, background .18s ease, border-color .18s ease;
+  white-space:nowrap;
+}
+.btn:hover{transform:translateY(-1px);box-shadow:var(--shadow-sm);border-color:var(--gold);}
+.btn:active{transform:translateY(0);}
+.btn-icon{width:38px;height:38px;padding:0;justify-content:center;border-radius:50%;}
+.btn-gold{
+  background:var(--gold-grad);border:none;color:#171308;
+  box-shadow:0 6px 20px -6px rgba(201,169,97,.6);
+}
+.btn-gold:hover{box-shadow:0 10px 28px -6px rgba(201,169,97,.75);transform:translateY(-2px);}
+.btn-ghost{background:transparent;border-color:transparent;}
+.btn-ghost:hover{background:var(--paper-alt);border-color:var(--line);}
+.btn-danger{color:#b3382c;}
+.btn-danger:hover{border-color:#b3382c;}
+.btn-sm{padding:7px 13px;font-size:12.5px;}
+.btn svg{width:16px;height:16px;flex-shrink:0;}
+
+.shell{max-width:1360px;margin:0 auto;padding:28px 32px 100px;}
+.tabs{
+  display:flex;gap:6px;background:var(--paper-alt);padding:5px;border-radius:999px;
+  width:fit-content;margin:0 auto 28px;border:1px solid var(--line);
+}
+.tab{
+  padding:9px 20px;border-radius:999px;font-size:13.5px;font-weight:600;color:var(--text-muted);
+  transition:all .25s ease;border:none;background:transparent;
+}
+.tab.active{background:var(--ink);color:var(--paper);box-shadow:var(--shadow-sm);}
+[data-theme="dark"] .tab.active{background:var(--gold-grad);color:#171308;}
+
+.view{display:none;animation:fadeUp .45s ease both;}
+.view.active{display:block;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+
+.grid{display:grid;grid-template-columns:1.15fr .85fr;gap:26px;align-items:start;}
+@media (max-width:1080px){.grid{grid-template-columns:1fr;}}
+
+/* ============ CARD ============ */
+.card{
+  background:var(--white);border:1px solid var(--line);border-radius:var(--radius-lg);
+  padding:26px;margin-bottom:22px;box-shadow:var(--shadow-sm);
+  transition:box-shadow .3s ease, border-color .3s ease;
+  position:relative;
+}
+.card:hover{box-shadow:var(--shadow-md);}
+.card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;}
+.card-head h2{font-size:17px;display:flex;align-items:center;gap:10px;}
+.card-eyebrow{font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold-deep);font-weight:700;margin-bottom:4px;display:block;}
+[data-theme="dark"] .card-eyebrow{color:var(--gold);}
+.card-num{
+  width:26px;height:26px;border-radius:50%;background:var(--paper-alt);
+  display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;
+  color:var(--gold-deep);border:1px solid var(--line);
+}
+
+.field{margin-bottom:14px;}
+.field label{display:block;font-size:12px;font-weight:600;color:var(--text-muted);margin-bottom:6px;letter-spacing:.02em;}
+.field input,.field select,.field textarea{
+  width:100%;padding:11px 13px;border-radius:var(--radius-sm);border:1.5px solid var(--line);
+  background:var(--paper);color:var(--text);font-size:14px;transition:border-color .2s ease, box-shadow .2s ease;
+}
+.field input:focus,.field select:focus,.field textarea:focus{
+  outline:none;border-color:var(--gold);box-shadow:0 0 0 4px rgba(201,169,97,.14);
+}
+.field textarea{resize:vertical;min-height:70px;}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+@media (max-width:560px){.row2,.row3{grid-template-columns:1fr;}}
+
+/* ============ LOGO UPLOADER ============ */
+.uploader{
+  position:relative;border:2px dashed var(--line-strong);border-radius:var(--radius);
+  padding:26px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;
+  text-align:center;cursor:pointer;transition:all .25s ease;background:var(--paper-alt);
+  min-height:150px;overflow:hidden;
+}
+.uploader:hover{border-color:var(--gold);background:color-mix(in srgb, var(--gold) 6%, var(--paper-alt));}
+.uploader.dragover{border-color:var(--gold);background:color-mix(in srgb, var(--gold) 12%, var(--paper-alt));transform:scale(1.01);}
+.uploader input[type=file]{display:none;}
+.uploader-icon{
+  width:46px;height:46px;border-radius:50%;background:var(--gold-grad);
+  display:flex;align-items:center;justify-content:center;color:#171308;box-shadow:var(--shadow-sm);
+}
+.uploader-icon svg{width:22px;height:22px;}
+.uploader-text{font-size:13.5px;font-weight:600;}
+.uploader-sub{font-size:11.5px;color:var(--text-muted);}
+.logo-preview-wrap{display:none;position:relative;width:100%;flex-direction:column;align-items:center;gap:12px;animation:popIn .4s cubic-bezier(.2,.9,.3,1.3);}
+.logo-preview-wrap.show{display:flex;}
+.logo-preview-wrap.show ~ .uploader-icon,.logo-preview-wrap.show ~ .uploader-text,.logo-preview-wrap.show ~ .uploader-sub{display:none;}
+@keyframes popIn{0%{opacity:0;transform:scale(.85);}100%{opacity:1;transform:scale(1);}}
+.logo-img{max-height:100px;max-width:100%;border-radius:10px;box-shadow:var(--shadow-sm);background:var(--white);padding:6px;object-fit:contain;}
+.logo-actions{display:flex;gap:8px;}
+.upload-success{
+  position:absolute;inset:0;background:rgba(201,169,97,.15);display:flex;align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;transition:opacity .3s ease;
+}
+.upload-success.flash{opacity:1;animation:flashOut .8s ease forwards;}
+@keyframes flashOut{0%{opacity:1;}70%{opacity:1;}100%{opacity:0;}}
+.check-badge{
+  width:52px;height:52px;border-radius:50%;background:var(--gold-grad);display:flex;align-items:center;justify-content:center;
+  animation:checkPop .5s cubic-bezier(.2,.9,.3,1.4);
+}
+@keyframes checkPop{0%{transform:scale(0);}70%{transform:scale(1.15);}100%{transform:scale(1);}}
+
+/* ============ ITEMS TABLE ============ */
+.items-table{width:100%;border-collapse:collapse;font-size:13.5px;}
+.items-table thead th{
+  text-align:left;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);
+  padding:0 8px 10px;font-weight:700;border-bottom:1.5px solid var(--line-strong);
+}
+.items-table tbody td{padding:8px 8px;border-bottom:1px solid var(--line);vertical-align:middle;}
+.items-table tbody tr{transition:background .2s ease;}
+.items-table tbody tr:hover{background:var(--paper-alt);}
+.items-table input{width:100%;border:1.5px solid transparent;background:transparent;padding:8px 9px;border-radius:8px;font-size:13.5px;color:var(--text);}
+.items-table input:focus{outline:none;border-color:var(--gold);background:var(--paper);}
+.items-table .num{text-align:right;font-variant-numeric:tabular-nums;}
+.col-amt{text-align:right;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap;padding-right:6px;}
+.row-del{
+  width:30px;height:30px;border-radius:50%;border:none;background:transparent;color:var(--text-muted);
+  display:flex;align-items:center;justify-content:center;transition:all .2s ease;
+}
+.row-del:hover{background:#f4dedb;color:#b3382c;}
+[data-theme="dark"] .row-del:hover{background:#3a1d18;}
+.add-item-btn{
+  margin-top:12px;width:100%;padding:12px;border-radius:var(--radius-sm);border:1.5px dashed var(--line-strong);
+  background:transparent;color:var(--text);font-weight:600;font-size:13.5px;display:flex;align-items:center;justify-content:center;gap:8px;
+  transition:all .2s ease;
+}
+.add-item-btn:hover{border-color:var(--gold);background:var(--paper-alt);color:var(--gold-deep);}
+
+/* ============ TOTALS ============ */
+.totals-box{background:var(--paper-alt);border-radius:var(--radius);padding:20px;border:1px solid var(--line);}
+.totals-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;font-size:14px;}
+.totals-row span:first-child{color:var(--text-muted);}
+.totals-row .amt{font-variant-numeric:tabular-nums;font-weight:600;}
+.totals-row.grand{border-top:1.5px solid var(--line-strong);margin-top:6px;padding-top:14px;}
+.totals-row.grand span:first-child{font-family:var(--font-display);font-size:17px;color:var(--text);font-weight:600;}
+.totals-row.grand .amt{font-size:24px;font-weight:700;font-family:var(--font-display);
+  background:var(--gold-grad);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
+.totals-row input{width:80px;text-align:right;padding:6px 8px;border-radius:7px;border:1.5px solid var(--line);background:var(--white);font-size:13px;}
+
+/* ============ SIGNATURE / QR ============ */
+.mini-upload{display:flex;align-items:center;gap:12px;padding:14px;border:1.5px dashed var(--line-strong);border-radius:var(--radius-sm);cursor:pointer;transition:.2s;background:var(--paper-alt);}
+.mini-upload:hover{border-color:var(--gold);}
+.mini-upload img{height:44px;border-radius:6px;background:var(--white);padding:3px;}
+.mini-upload input{display:none;}
+
+/* ============ PREVIEW / INVOICE DOC ============ */
+.preview-sticky{position:sticky;top:88px;}
+.invoice-doc{
+  background:#ffffff;color:#1a1a1a;border-radius:var(--radius-lg);
+  box-shadow:var(--shadow-lg);padding:46px 42px;font-family:var(--font-body);
+  width:100%;aspect-ratio:210/297;overflow:auto;border:1px solid var(--line);
+}
+.invoice-doc *{color:inherit;}
+.inv-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:30px;gap:16px;}
+.inv-logo-box img{max-height:64px;max-width:180px;object-fit:contain;margin-bottom:8px;}
+.inv-company-name{font-family:var(--font-display);font-size:20px;font-weight:700;}
+.inv-company-meta{font-size:11.5px;color:#6b6558;line-height:1.6;margin-top:3px;}
+.inv-title{text-align:right;}
+.inv-title h2{font-family:var(--font-display);font-size:30px;letter-spacing:.02em;background:linear-gradient(135deg,#c9a961,#8a6a30);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
+.inv-meta-line{font-size:12px;color:#57524a;margin-top:4px;}
+.inv-meta-line b{color:#1a1a1a;font-family:var(--font-mono);}
+.inv-divider{height:1px;background:linear-gradient(90deg,#c9a961,transparent);margin:20px 0;}
+.inv-parties{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:26px;}
+.inv-party-label{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:#a9834a;font-weight:700;margin-bottom:6px;}
+.inv-party-name{font-size:14.5px;font-weight:700;margin-bottom:2px;}
+.inv-party-detail{font-size:12px;color:#57524a;line-height:1.6;}
+table.inv-items{width:100%;border-collapse:collapse;margin-bottom:20px;}
+table.inv-items thead th{
+  text-align:left;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#fff;
+  background:#141311;padding:10px 12px;font-weight:600;
+}
+table.inv-items thead th:first-child{border-radius:8px 0 0 8px;}
+table.inv-items thead th:last-child{border-radius:0 8px 8px 0;text-align:right;}
+table.inv-items tbody td{padding:11px 12px;font-size:12.5px;border-bottom:1px solid #eee6d8;}
+table.inv-items tbody td:last-child{text-align:right;font-weight:600;font-variant-numeric:tabular-nums;}
+table.inv-items tbody tr:last-child td{border-bottom:none;}
+.inv-bottom{display:flex;justify-content:space-between;gap:24px;margin-top:6px;}
+.inv-notes{flex:1;font-size:11.5px;color:#57524a;line-height:1.7;}
+.inv-notes b{display:block;color:#1a1a1a;font-size:11px;letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px;}
+.inv-totals{width:230px;flex-shrink:0;}
+.inv-totals .t-row{display:flex;justify-content:space-between;font-size:12.5px;padding:6px 0;color:#57524a;}
+.inv-totals .t-row.grand{border-top:1.5px solid #1a1a1a;margin-top:6px;padding-top:10px;font-size:16px;font-weight:700;color:#1a1a1a;font-family:var(--font-display);}
+.inv-foot-strip{margin-top:30px;padding-top:16px;border-top:1px solid #eee6d8;display:flex;justify-content:space-between;align-items:flex-end;gap:16px;}
+.inv-sign img{height:42px;object-fit:contain;}
+.inv-sign-label{font-size:10px;color:#a9834a;text-transform:uppercase;letter-spacing:.1em;margin-top:4px;}
+.inv-qr img,#invoiceQrBox img{width:70px;height:70px;}
+.inv-payment{font-size:11px;color:#57524a;line-height:1.7;}
+.inv-payment b{display:block;color:#1a1a1a;font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px;}
+.watermark-badge{position:absolute;top:20px;right:20px;font-size:9px;letter-spacing:.1em;color:#c9a961;opacity:.5;text-transform:uppercase;}
+
+/* ============ HISTORY ============ */
+.history-toolbar{display:flex;gap:12px;align-items:center;margin-bottom:20px;flex-wrap:wrap;}
+.search-wrap{position:relative;flex:1;min-width:220px;}
+.search-wrap svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:var(--text-muted);}
+.search-wrap input{width:100%;padding:12px 14px 12px 40px;border-radius:999px;border:1.5px solid var(--line);background:var(--white);font-size:14px;}
+.search-wrap input:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 4px rgba(201,169,97,.14);}
+
+.history-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;}
+.hist-card{
+  background:var(--white);border:1px solid var(--line);border-radius:var(--radius);padding:18px;
+  transition:all .25s ease;cursor:default;position:relative;overflow:hidden;
+}
+.hist-card:hover{box-shadow:var(--shadow-md);transform:translateY(-3px);border-color:var(--gold);}
+.hist-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;}
+.hist-num{font-family:var(--font-mono);font-size:12px;color:var(--gold-deep);font-weight:700;}
+.hist-total{font-family:var(--font-display);font-size:19px;font-weight:700;}
+.hist-client{font-size:14.5px;font-weight:600;margin-bottom:2px;}
+.hist-date{font-size:11.5px;color:var(--text-muted);margin-bottom:14px;}
+.hist-actions{display:flex;gap:6px;flex-wrap:wrap;}
+.empty-state{text-align:center;padding:70px 20px;color:var(--text-muted);}
+.empty-state svg{width:52px;height:52px;margin-bottom:14px;opacity:.5;}
+.empty-state h3{font-size:17px;color:var(--text);margin-bottom:6px;}
+
+/* ============ TOAST ============ */
+.toast-wrap{position:fixed;bottom:26px;right:26px;z-index:200;display:flex;flex-direction:column;gap:10px;}
+.toast{
+  background:var(--ink);color:var(--paper);padding:13px 20px;border-radius:12px;font-size:13.5px;font-weight:600;
+  box-shadow:var(--shadow-lg);display:flex;align-items:center;gap:10px;animation:toastIn .35s cubic-bezier(.2,.9,.3,1.2);
+}
+[data-theme="dark"] .toast{background:var(--gold-grad);color:#171308;}
+@keyframes toastIn{from{opacity:0;transform:translateY(14px) scale(.95);}to{opacity:1;transform:translateY(0) scale(1);}}
+.toast.out{animation:toastOut .3s ease forwards;}
+@keyframes toastOut{to{opacity:0;transform:translateY(10px);}}
+
+/* ============ FOOTER ============ */
+footer{border-top:1px solid var(--line);margin-top:60px;padding:44px 32px 30px;background:var(--paper-alt);}
+.footer-inner{max-width:1360px;margin:0 auto;display:flex;justify-content:space-between;flex-wrap:wrap;gap:26px;}
+.footer-brand h3{font-size:19px;margin-bottom:6px;}
+.footer-brand p{color:var(--text-muted);font-size:13.5px;max-width:320px;}
+.footer-contact h4{font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold-deep);margin-bottom:10px;}
+.footer-contact a{font-size:13.5px;color:var(--text);text-decoration:none;display:flex;align-items:center;gap:8px;}
+.footer-link{transition:color .2s ease;}
+.footer-link:hover{color:var(--gold-deep);}
+.footer-bottom{max-width:1360px;margin:26px auto 0;padding-top:20px;border-top:1px solid var(--line);font-size:12px;color:var(--text-muted);text-align:center;}
+
+/* Print isolation */
+@media print{
+  body *{visibility:hidden;}
+  #invoiceDoc,#invoiceDoc *{visibility:visible;}
+  #invoiceDoc{position:absolute;top:0;left:0;width:210mm;min-height:297mm;box-shadow:none;border:none;border-radius:0;}
+  .watermark-badge{display:none;}
+}
+
+.prose{font-size:14.5px;line-height:1.85;color:var(--text-muted);margin-bottom:14px;}
+.feature-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px;}
+.feature-list li{font-size:14px;line-height:1.7;color:var(--text-muted);padding-left:22px;position:relative;}
+.feature-list li::before{content:'';position:absolute;left:0;top:8px;width:8px;height:8px;border-radius:50%;background:var(--gold-grad);}
+.feature-list li b{color:var(--text);}
+.faq{display:flex;flex-direction:column;gap:10px;}
+.faq details{border:1px solid var(--line);border-radius:var(--radius-sm);padding:14px 16px;background:var(--paper-alt);transition:border-color .2s ease;}
+.faq details[open]{border-color:var(--gold);}
+.faq summary{font-weight:600;font-size:14px;cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;}
+.faq summary::-webkit-details-marker{display:none;}
+.faq summary::after{content:'+';font-size:18px;color:var(--gold-deep);transition:transform .25s ease;}
+.faq details[open] summary::after{transform:rotate(45deg);}
+.guides-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:18px;}
+.guide-card{background:var(--white);border:1px solid var(--line);border-radius:var(--radius);padding:20px;cursor:pointer;transition:all .25s ease;display:flex;flex-direction:column;gap:10px;}
+.guide-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-md);border-color:var(--gold);}
+.guide-tag{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold-deep);font-weight:700;}
+.guide-card h3{font-size:16.5px;line-height:1.35;}
+.guide-card p{font-size:13px;color:var(--text-muted);line-height:1.6;}
+.guide-read{font-size:12.5px;font-weight:700;color:var(--gold-deep);display:flex;align-items:center;gap:6px;margin-top:auto;}
+.guide-article-card h2{font-size:24px;margin-bottom:6px;}
+.guide-article-card .guide-meta{font-size:12px;color:var(--text-muted);margin-bottom:20px;}
+.guide-article-card p{font-size:14.5px;line-height:1.85;color:var(--text-muted);margin-bottom:16px;}
+.guide-article-card h4{font-size:15.5px;color:var(--text);margin:22px 0 10px;font-family:var(--font-display);}
+.faq p{margin-top:10px;font-size:13.5px;color:var(--text-muted);line-height:1.7;}
+.contact-icon-badge{width:64px;height:64px;border-radius:50%;background:var(--gold-grad);display:flex;align-items:center;justify-content:center;box-shadow:var(--shadow-md);}
+.contact-email-link{font-size:19px;font-weight:700;font-family:var(--font-display);color:var(--text);text-decoration:none;border-bottom:2px solid var(--gold);padding-bottom:2px;}
+.section-title{display:flex;align-items:center;gap:10px;margin:36px 0 18px;}
+.section-title h2{font-size:22px;}
+.section-title .line{flex:1;height:1px;background:var(--line);}
+
+.spin{animation:spin 1s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+.autosave-badge{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--text-muted);}
+.autosave-dot{width:6px;height:6px;border-radius:50%;background:#4caf7d;box-shadow:0 0 0 3px rgba(76,175,125,.2);}
+
+@media (max-width:640px){
+  .topbar{padding:12px 16px;}
+  .shell{padding:20px 14px 80px;}
+  .brand-text span{display:none;}
+  .invoice-doc{padding:26px 20px;aspect-ratio:auto;min-height:600px;}
+  .inv-top{flex-direction:column;}
+  .inv-title{text-align:left;}
+  .footer-inner{flex-direction:column;}
+}
+</style>
+</head>
+<body data-theme="light">
+
+<div class="topbar">
+  <div class="brand">
+    <div class="brand-mark">IG</div>
+    <div class="brand-text">
+      <h1>Invoice Generator</h1>
+      <span>Premium Billing Suite</span>
+    </div>
+  </div>
+  <div class="topbar-actions">
+    <div class="autosave-badge" id="autosaveBadge"><span class="autosave-dot"></span><span>Saved</span></div>
+    <button class="btn btn-icon btn-ghost" id="themeToggle" title="Toggle dark mode" aria-label="Toggle dark mode">
+      <svg id="themeIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+    </button>
+  </div>
+</div>
+
+<div class="shell">
+
+  <div class="tabs">
+    <button class="tab active" data-view="editor">Editor</button>
+    <button class="tab" data-view="history">Invoice History</button>
+    <button class="tab" data-view="guides">Guides</button>
+    <button class="tab" data-view="about">About</button>
+    <button class="tab" data-view="contact">Contact</button>
+    <button class="tab" data-view="privacy">Privacy Policy</button>
+    <button class="tab" data-view="terms">Terms of Service</button>
+  </div>
+
+  <!-- ===================== EDITOR VIEW ===================== -->
+  <div class="view active" id="view-editor">
+    <div class="grid">
+
+      <!-- LEFT: FORM -->
+      <div>
+
+        <div class="card">
+          <div class="card-head"><h2><span class="card-num">1</span> Your Company</h2></div>
+          <label style="display:block;font-size:12px;font-weight:600;color:var(--text-muted);margin-bottom:8px;">Company Logo</label>
+          <div class="uploader" id="logoUploader">
+            <input type="file" id="logoInput" accept="image/*">
+            <div class="upload-success" id="logoSuccess"><div class="check-badge"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#171308" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div></div>
+            <div class="uploader-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            </div>
+            <div class="uploader-text">Drag & drop your logo, or click to browse</div>
+            <div class="uploader-sub">PNG, JPG, SVG — up to 5MB — HD preview</div>
+            <div class="logo-preview-wrap" id="logoPreviewWrap">
+              <img id="logoPreview" class="logo-img" alt="Logo preview">
+              <div class="logo-actions">
+                <button class="btn btn-sm" id="logoReplaceBtn" type="button">Replace</button>
+                <button class="btn btn-sm btn-danger" id="logoRemoveBtn" type="button">Remove</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="row2" style="margin-top:16px;">
+            <div class="field"><label>Company Name</label><input type="text" id="companyName" placeholder="Aurelia Studio Co."></div>
+            <div class="field"><label>Email</label><input type="email" id="companyEmail" placeholder="hello@aurelia.co"></div>
+          </div>
+          <div class="row2">
+            <div class="field"><label>Phone</label><input type="text" id="companyPhone" placeholder="+1 (555) 010-2030"></div>
+            <div class="field"><label>Website</label><input type="text" id="companyWebsite" placeholder="www.aurelia.co"></div>
+          </div>
+          <div class="field"><label>Address</label><textarea id="companyAddress" placeholder="221B Baker Street, London, UK"></textarea></div>
+        </div>
+
+        <div class="card">
+          <div class="card-head"><h2><span class="card-num">2</span> Bill To (Client)</h2></div>
+          <div class="row2">
+            <div class="field"><label>Client Name</label><input type="text" id="clientName" placeholder="Nova Interiors LLC"></div>
+            <div class="field"><label>Client Email</label><input type="email" id="clientEmail" placeholder="billing@novainteriors.com"></div>
+          </div>
+          <div class="field"><label>Client Address</label><textarea id="clientAddress" placeholder="88 Marina Blvd, Dubai, UAE"></textarea></div>
+        </div>
+
+        <div class="card">
+          <div class="card-head"><h2><span class="card-num">3</span> Invoice Details</h2></div>
+          <div class="row3">
+            <div class="field"><label>Invoice Number</label><input type="text" id="invoiceNumber" readonly style="font-family:var(--font-mono);"></div>
+            <div class="field"><label>Issue Date</label><input type="date" id="issueDate"></div>
+            <div class="field"><label>Due Date</label><input type="date" id="dueDate"></div>
+          </div>
+          <div class="field" style="max-width:220px;"><label>Currency</label>
+            <select id="currency">
+              <option value="USD">USD — $</option>
+              <option value="EUR">EUR — €</option>
+              <option value="GBP">GBP — £</option>
+              <option value="PKR">PKR — ₨</option>
+              <option value="AED">AED — د.إ</option>
+              <option value="SAR">SAR — ﷼</option>
+              <option value="INR">INR — ₹</option>
+              <option value="CAD">CAD — $</option>
+              <option value="AUD">AUD — $</option>
+              <option value="JPY">JPY — ¥</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head"><h2><span class="card-num">4</span> Items</h2></div>
+          <div style="overflow-x:auto;">
+            <table class="items-table">
+              <thead><tr><th style="width:38%;">Description</th><th style="width:12%;">Qty</th><th style="width:20%;">Price</th><th style="width:20%;">Amount</th><th style="width:6%;"></th></tr></thead>
+              <tbody id="itemsBody"></tbody>
+            </table>
+          </div>
+          <button class="add-item-btn" id="addItemBtn" type="button">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Add Item
+          </button>
+        </div>
+
+        <div class="card">
+          <div class="card-head"><h2><span class="card-num">5</span> Totals & Charges</h2></div>
+          <div class="totals-box">
+            <div class="totals-row"><span>Subtotal</span><span class="amt" id="subtotalDisp">0.00</span></div>
+            <div class="totals-row"><span>Tax (%)</span><input type="number" id="taxRate" value="0" min="0" step="0.01"></div>
+            <div class="totals-row"><span>Discount (%)</span><input type="number" id="discountRate" value="0" min="0" step="0.01"></div>
+            <div class="totals-row"><span>Shipping</span><input type="number" id="shippingFee" value="0" min="0" step="0.01"></div>
+            <div class="totals-row grand"><span>Grand Total</span><span class="amt" id="grandTotalDisp">0.00</span></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head"><h2><span class="card-num">6</span> Notes & Terms</h2></div>
+          <div class="field"><label>Notes</label><textarea id="notesField" placeholder="Thank you for your business!"></textarea></div>
+          <div class="field"><label>Terms & Conditions</label><textarea id="termsField" placeholder="Payment due within 15 days of invoice date."></textarea></div>
+        </div>
+
+        <div class="card">
+          <div class="card-head"><h2><span class="card-num">7</span> Payment Info, Signature & QR</h2></div>
+          <div class="field"><label>Payment Details</label><textarea id="paymentInfo" placeholder="Bank: Aurelia Trust • IBAN: GB29 NWBK 6016 1331 9268 19 • SWIFT: NWBKGB2L"></textarea></div>
+          <div class="row2">
+            <div class="field">
+              <label>Signature</label>
+              <label class="mini-upload" id="signUpload">
+                <input type="file" id="signInput" accept="image/*">
+                <img id="signPreview" style="display:none;">
+                <span id="signUploadText">Click to upload signature</span>
+              </label>
+            </div>
+            <div class="field">
+              <label>QR Code (payment link / info)</label>
+              <input type="text" id="qrData" placeholder="https://pay.aurelia.co/inv/2026-0001">
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- RIGHT: PREVIEW -->
+      <div>
+        <div class="preview-sticky">
+          <div style="display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;">
+            <button class="btn btn-gold" id="downloadPdfBtn" style="flex:1;justify-content:center;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#171308" stroke-width="2.2"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M5 21h14"/></svg>
+              Download HD PDF
+            </button>
+            <button class="btn btn-icon" id="printBtn" title="Print"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg></button>
+            <button class="btn btn-icon" id="saveBtn" title="Save invoice"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg></button>
+          </div>
+
+          <div class="invoice-doc" id="invoiceDoc">
+            <span class="watermark-badge">Preview</span>
+            <div class="inv-top">
+              <div class="inv-logo-box">
+                <img id="docLogo" style="display:none;">
+                <div class="inv-company-name" id="docCompanyName">Your Company</div>
+                <div class="inv-company-meta" id="docCompanyMeta">Add your company details</div>
+              </div>
+              <div class="inv-title">
+                <h2>INVOICE</h2>
+                <div class="inv-meta-line">No. <b id="docInvNum">—</b></div>
+                <div class="inv-meta-line">Issued <b id="docIssueDate">—</b></div>
+                <div class="inv-meta-line">Due <b id="docDueDate">—</b></div>
+              </div>
+            </div>
+            <div class="inv-divider"></div>
+            <div class="inv-parties">
+              <div>
+                <div class="inv-party-label">Billed To</div>
+                <div class="inv-party-name" id="docClientName">Client Name</div>
+                <div class="inv-party-detail" id="docClientDetail">Client details appear here</div>
+              </div>
+              <div>
+                <div class="inv-party-label">Currency</div>
+                <div class="inv-party-name" id="docCurrency">USD</div>
+              </div>
+            </div>
+            <table class="inv-items">
+              <thead><tr><th>Description</th><th style="text-align:right;">Qty</th><th style="text-align:right;">Price</th><th>Amount</th></tr></thead>
+              <tbody id="docItemsBody"></tbody>
+            </table>
+            <div class="inv-bottom">
+              <div class="inv-notes">
+                <b>Notes</b><span id="docNotes">—</span>
+                <b style="margin-top:10px;">Terms</b><span id="docTerms">—</span>
+              </div>
+              <div class="inv-totals">
+                <div class="t-row"><span>Subtotal</span><span id="docSubtotal">0.00</span></div>
+                <div class="t-row"><span>Tax</span><span id="docTax">0.00</span></div>
+                <div class="t-row"><span>Discount</span><span id="docDiscount">0.00</span></div>
+                <div class="t-row"><span>Shipping</span><span id="docShipping">0.00</span></div>
+                <div class="t-row grand"><span>Total</span><span id="docGrandTotal">0.00</span></div>
+              </div>
+            </div>
+            <div class="inv-foot-strip">
+              <div class="inv-payment">
+                <b>Payment Info</b><span id="docPayment">—</span>
+              </div>
+              <div class="inv-sign" style="text-align:center;">
+                <img id="docSignature" style="display:none;">
+                <div class="inv-sign-label">Authorized Signature</div>
+              </div>
+              <div class="inv-qr" id="invoiceQrBox"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ===================== HISTORY VIEW ===================== -->
+  <div class="view" id="view-history">
+    <div class="history-toolbar">
+      <div class="search-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="historySearch" placeholder="Search by client, invoice number, or amount...">
+      </div>
+      <button class="btn" id="newInvoiceBtn">+ New Invoice</button>
+    </div>
+    <div class="history-grid" id="historyGrid"></div>
+  </div>
+
+  <!-- ===================== GUIDES / BLOG VIEW ===================== -->
+  <div class="view" id="view-guides">
+    <div id="guidesList">
+      <div style="max-width:640px;margin:0 auto 32px;text-align:center;">
+        <span class="card-eyebrow">Resources</span>
+        <h2 style="font-size:26px;margin-bottom:10px;">Invoicing Guides & Tips</h2>
+        <p class="prose">Practical, no-fluff guides on getting paid faster, staying professional, and avoiding common invoicing mistakes — written for freelancers and small business owners.</p>
+      </div>
+      <div class="guides-grid" id="guidesGrid"></div>
+    </div>
+    <div id="guidesReader" style="display:none;">
+      <button class="btn btn-sm" id="guideBackBtn" style="margin-bottom:20px;">← Back to Guides</button>
+      <div class="card guide-article-card" id="guideArticleBody" style="max-width:780px;margin:0 auto;"></div>
+    </div>
+  </div>
+
+  <!-- ===================== ABOUT VIEW ===================== -->
+  <div class="view" id="view-about">
+    <div class="card" style="max-width:840px;margin:0 auto;">
+      <span class="card-eyebrow">Our Story</span>
+      <h2 style="font-size:26px;margin-bottom:16px;">About Invoice Generator</h2>
+      <p class="prose">Invoice Generator was built to solve a simple problem: freelancers, agencies, and small businesses need a fast, elegant way to send professional invoices without paying for bloated accounting software or wrestling with clunky templates. We started as a weekend project focused on one idea — billing should feel effortless, not administrative.</p>
+      <p class="prose">Every part of the tool runs directly in your browser. Your company details, client records, and saved invoices are stored locally on your own device, which means your financial data is never uploaded to a server we control. That gives you speed, privacy, and full ownership of your billing history in one lightweight page.</p>
+      <p class="prose">We designed the interface around three principles borrowed from the products we admire most: the clarity of Apple, the precision of Stripe's dashboards, and the friendliness of Notion. The result is a premium black, white, and gold aesthetic that looks at home whether you're invoicing a boutique client or a Fortune 500 vendor.</p>
+      <div class="section-title" style="margin-top:28px;"><h2 style="font-size:18px;">What makes it different</h2><div class="line"></div></div>
+      <ul class="feature-list">
+        <li><b>No sign-up required.</b> Open the page and start invoicing immediately — there's no account wall between you and your first invoice.</li>
+        <li><b>Works offline.</b> Once loaded, the editor, calculator, and PDF export all function without an internet connection.</li>
+        <li><b>Unlimited invoices.</b> Save, search, duplicate, and edit as many invoices as you need, all stored locally in your browser.</li>
+        <li><b>Global currency support.</b> Bill clients in USD, EUR, GBP, PKR, AED, SAR, INR, CAD, AUD, or JPY with correct symbol formatting.</li>
+        <li><b>Print-perfect PDFs.</b> Every export is laid out to precise A4 dimensions, ready for email or physical mailing.</li>
+      </ul>
+      <div class="section-title" style="margin-top:28px;"><h2 style="font-size:18px;">Frequently asked questions</h2><div class="line"></div></div>
+      <div class="faq">
+        <details><summary>Is Invoice Generator really free to use?</summary><p>Yes. All core features — unlimited invoices, PDF export, printing, dark mode, and local invoice history — are completely free with no hidden charges.</p></details>
+        <details><summary>Where is my invoice data stored?</summary><p>All invoice data is saved in your browser's local storage on your own device. Nothing is transmitted to an external server, so clearing your browser data will remove your saved invoices.</p></details>
+        <details><summary>Can I use this on my phone or tablet?</summary><p>Absolutely. The entire interface is fully responsive and has been tuned for mobile, tablet, and desktop screens alike.</p></details>
+        <details><summary>Does the PDF download include the buttons and toolbar?</summary><p>No. The PDF export captures only the clean invoice document itself, formatted precisely for A4 printing, with no interface elements included.</p></details>
+        <details><summary>Can I add my own logo and signature?</summary><p>Yes. You can drag and drop or upload a logo and a signature image, both of which appear on the live preview and the final PDF.</p></details>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== CONTACT VIEW ===================== -->
+  <div class="view" id="view-contact">
+    <div class="card" style="max-width:640px;margin:0 auto;text-align:center;">
+      <span class="card-eyebrow">Get In Touch</span>
+      <h2 style="font-size:26px;margin-bottom:10px;">Contact Us</h2>
+      <p class="prose" style="margin-bottom:24px;">Have a question, found a bug, or want to suggest a new feature? We'd love to hear from you. Reach out any time and we'll get back to you as soon as we can.</p>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:18px;">
+        <div class="contact-icon-badge">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#171308" stroke-width="2"><path d="M4 4h16v16H4z" opacity="0"/><path d="M22 6l-10 7L2 6"/><rect x="2" y="4" width="20" height="16" rx="2"/></svg>
+        </div>
+        <div>
+          <div style="font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);margin-bottom:6px;">Email us directly</div>
+          <a href="mailto:ramayhassnain96@gmail.com" class="contact-email-link">ramayhassnain96@gmail.com</a>
+        </div>
+        <a href="mailto:ramayhassnain96@gmail.com" class="btn btn-gold" style="margin-top:6px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#171308" stroke-width="2"><path d="M22 6l-10 7L2 6"/><rect x="2" y="4" width="20" height="16" rx="2"/></svg>
+          Send an Email
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== PRIVACY POLICY VIEW ===================== -->
+  <div class="view" id="view-privacy">
+    <div class="card" style="max-width:840px;margin:0 auto;">
+      <span class="card-eyebrow">Legal</span>
+      <h2 style="font-size:26px;margin-bottom:16px;">Privacy Policy</h2>
+      <p class="prose">Last updated: January 2026</p>
+      <p class="prose">This Privacy Policy explains how Invoice Generator ("we", "our", "the site") handles information when you use our web application. We built this tool with privacy as a foundational principle, and this policy describes exactly what happens to your data.</p>
+      <div class="section-title" style="margin-top:22px;"><h2 style="font-size:17px;">Information we do not collect</h2><div class="line"></div></div>
+      <p class="prose">We do not require account creation, and we do not collect or store your company details, client details, invoice contents, logos, or signatures on any server. All invoice data you enter — including item descriptions, prices, totals, and uploaded images — is processed entirely within your own browser and saved using your browser's local storage, which resides only on your device.</p>
+      <div class="section-title" style="margin-top:22px;"><h2 style="font-size:17px;">Information collected automatically</h2><div class="line"></div></div>
+      <p class="prose">Like most websites, our hosting provider and any advertising partners we work with may automatically collect standard technical information such as browser type, device type, approximate location, and pages visited, typically through cookies or similar technologies. This information is used to operate the site reliably and, where applicable, to display relevant advertising.</p>
+      <div class="section-title" style="margin-top:22px;"><h2 style="font-size:17px;">Cookies and advertising</h2><div class="line"></div></div>
+      <p class="prose">We may use third-party advertising vendors, including Google, to serve ads when you visit our site. These vendors may use cookies to serve ads based on your prior visits to this or other websites. Google's use of advertising cookies enables it and its partners to serve ads based on your visit to our site and/or other sites on the internet. You may opt out of personalized advertising by visiting Google's Ads Settings at adssettings.google.com.</p>
+      <div class="section-title" style="margin-top:22px;"><h2 style="font-size:17px;">Data retention and deletion</h2><div class="line"></div></div>
+      <p class="prose">Because all invoice data lives in your browser's local storage, you are always in full control of it. You can delete individual invoices at any time from the Invoice History screen, or clear all data instantly by clearing your browser's site data for this page.</p>
+      <div class="section-title" style="margin-top:22px;"><h2 style="font-size:17px;">Children's privacy</h2><div class="line"></div></div>
+      <p class="prose">This site is intended for business and professional use and is not directed at children under the age of 13. We do not knowingly collect information from children.</p>
+      <div class="section-title" style="margin-top:22px;"><h2 style="font-size:17px;">Changes to this policy</h2><div class="line"></div></div>
+      <p class="prose">We may update this Privacy Policy from time to time. Any changes will be reflected on this page with an updated revision date.</p>
+      <div class="section-title" style="margin-top:22px;"><h2 style="font-size:17px;">Contact us</h2><div class="line"></div></div>
+      <p class="prose">If you have any questions about this Privacy Policy, please contact us at <a href="mailto:ramayhassnain96@gmail.com" style="color:var(--gold-deep);font-weight:600;">ramayhassnain96@gmail.com</a>.</p>
+    </div>
+  </div>
+
+  <!-- ===================== TERMS VIEW ===================== -->
+  <div class="view" id="view-terms">
+    <div class="card" style="max-width:840px;margin:0 auto;">
+      <span class="card-eyebrow">Legal</span>
+      <h2 style="font-size:26px;margin-bottom:16px;">Terms of Service</h2>
+      <p class="prose">Last updated: January 2026</p>
+      <p class="prose">By accessing or using Invoice Generator, you agree to be bound by these Terms of Service. Please read them carefully before using the site.</p>
+      <div class="section-title" style="margin-top:22px;"><h2 style="font-size:17px;">Use of the service</h2><div class="line"></div></div>
+      <p class="prose">Invoice Generator provides a free, browser-based tool for creating, saving, and exporting invoices. You may use the service for any lawful personal or business purpose. You are solely responsible for the accuracy of the information you enter into your invoices, including tax rates, totals, and client details.</p>
+      <div class="section-title" style="margin-top:22px;"><h2 style="font-size:17px;">No warranty</h2><div class="line"></div></div>
+      <p class="prose">The service is provided "as is" and "as available" without warranties of any kind, either express or implied. We do not guarantee that the tool will be error-free, uninterrupted, or suitable for every accounting, tax, or legal requirement in your jurisdiction. We recommend verifying totals and tax calculations before sending an invoice to a client.</p>
+      <div class="section-title" style="margin-top:22px;"><h2 style="font-size:17px;">Limitation of liability</h2><div class="line"></div></div>
+      <p class="prose">To the fullest extent permitted by law, Invoice Generator and its creators shall not be liable for any indirect, incidental, or consequential damages arising from your use of, or inability to use, the service, including but not limited to loss of data stored in your browser's local storage.</p>
+      <div class="section-title" style="margin-top:22px;"><h2 style="font-size:17px;">Data and local storage</h2><div class="line"></div></div>
+      <p class="prose">Because your invoices are stored locally in your browser, we are not able to recover lost data if you clear your browser storage, switch devices, or use a different browser. We recommend downloading a PDF copy of any invoice you wish to keep permanently.</p>
+      <div class="section-title" style="margin-top:22px;"><h2 style="font-size:17px;">Advertising</h2><div class="line"></div></div>
+      <p class="prose">This site may display advertisements served by third-party advertising networks, including Google AdSense, to help support the free availability of the tool. We do not control the specific content of individual ads.</p>
+      <div class="section-title" style="margin-top:22px;"><h2 style="font-size:17px;">Changes to these terms</h2><div class="line"></div></div>
+      <p class="prose">We may revise these Terms of Service at any time. Continued use of the site after changes are posted constitutes acceptance of the revised terms.</p>
+      <div class="section-title" style="margin-top:22px;"><h2 style="font-size:17px;">Contact us</h2><div class="line"></div></div>
+      <p class="prose">Questions about these Terms can be sent to <a href="mailto:ramayhassnain96@gmail.com" style="color:var(--gold-deep);font-weight:600;">ramayhassnain96@gmail.com</a>.</p>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <h3>Invoice Generator</h3>
+      <p>Create professional invoices quickly and easily.</p>
+    </div>
+    <div class="footer-contact">
+      <h4>Navigate</h4>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <a href="#" class="footer-link" data-view="guides">Guides</a>
+        <a href="#" class="footer-link" data-view="about">About</a>
+        <a href="#" class="footer-link" data-view="privacy">Privacy Policy</a>
+        <a href="#" class="footer-link" data-view="terms">Terms of Service</a>
+      </div>
+    </div>
+    <div class="footer-contact">
+      <h4>Contact</h4>
+      <a href="mailto:ramayhassnain96@gmail.com">📧 ramayhassnain96@gmail.com</a>
+    </div>
+  </div>
+  <div class="footer-bottom">© 2026 Invoice Generator. All Rights Reserved.</div>
+</footer>
+
+<div class="toast-wrap" id="toastWrap"></div>
+
+<script>
+(function(){
+'use strict';
+
+/* ---------------- STATE ---------------- */
+const CURRENCY_SYMBOLS = {USD:'$',EUR:'€',GBP:'£',PKR:'₨',AED:'د.إ',SAR:'﷼',INR:'₹',CAD:'$',AUD:'$',JPY:'¥'};
+let state = {
+  id: null,
+  logo: null,
+  signature: null,
+  items: [],
+};
+let itemCounter = 0;
+
+/* ---------------- HELPERS ---------------- */
+function $(id){return document.getElementById(id);}
+function fmt(n){ n = isFinite(n)?n:0; return n.toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function symbol(){ return CURRENCY_SYMBOLS[$('currency').value] || '$'; }
+function money(n){ return symbol()+' '+fmt(n); }
+function uid(){ return 'inv_'+Date.now()+'_'+Math.random().toString(36).slice(2,8); }
+function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+function toast(msg, icon){
+  const wrap = $('toastWrap');
+  const t = document.createElement('div');
+  t.className = 'toast';
+  t.innerHTML = (icon||'✓') + ' <span>'+escapeHtml(msg)+'</span>';
+  wrap.appendChild(t);
+  setTimeout(()=>{ t.classList.add('out'); setTimeout(()=>t.remove(),320); }, 2400);
+}
+
+/* ---------------- INVOICE NUMBER ---------------- */
+function generateInvoiceNumber(){
+  const saved = JSON.parse(localStorage.getItem('ig_invoices')||'[]');
+  const year = new Date().getFullYear();
+  const count = saved.length + 1;
+  return 'INV-'+year+'-'+String(count).padStart(4,'0');
+}
+
+/* ---------------- ITEM ROWS ---------------- */
+function addItem(data){
+  const id = 'it_'+(itemCounter++);
+  const item = Object.assign({id, desc:'', qty:1, price:0}, data||{});
+  state.items.push(item);
+  renderItemRow(item);
+  recalc();
+}
+function renderItemRow(item){
+  const tr = document.createElement('tr');
+  tr.dataset.id = item.id;
+  tr.innerHTML = `
+    <td><input type="text" class="i-desc" placeholder="Item description" value="${escapeHtml(item.desc)}"></td>
+    <td><input type="number" class="i-qty num" min="0" step="1" value="${item.qty}"></td>
+    <td><input type="number" class="i-price num" min="0" step="0.01" value="${item.price}"></td>
+    <td class="col-amt i-amt">${fmt(item.qty*item.price)}</td>
+    <td><button class="row-del" type="button" title="Remove item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></button></td>
+  `;
+  $('itemsBody').appendChild(tr);
+
+  tr.querySelector('.i-desc').addEventListener('input', e=>{ item.desc = e.target.value; recalc(); });
+  tr.querySelector('.i-qty').addEventListener('input', e=>{ item.qty = parseFloat(e.target.value)||0; tr.querySelector('.i-amt').textContent = fmt(item.qty*item.price); recalc(); });
+  tr.querySelector('.i-price').addEventListener('input', e=>{ item.price = parseFloat(e.target.value)||0; tr.querySelector('.i-amt').textContent = fmt(item.qty*item.price); recalc(); });
+  tr.querySelector('.row-del').addEventListener('click', ()=>{
+    state.items = state.items.filter(i=>i.id!==item.id);
+    tr.remove();
+    recalc();
+  });
+}
+function clearItems(){ $('itemsBody').innerHTML=''; state.items=[]; }
+
+/* ---------------- CALCULATIONS ---------------- */
+function recalc(){
+  const subtotal = state.items.reduce((s,i)=>s + (i.qty*i.price), 0);
+  const taxRate = parseFloat($('taxRate').value)||0;
+  const discountRate = parseFloat($('discountRate').value)||0;
+  const shipping = parseFloat($('shippingFee').value)||0;
+  const taxAmt = subtotal * taxRate/100;
+  const discAmt = subtotal * discountRate/100;
+  const grand = subtotal + taxAmt - discAmt + shipping;
+
+  $('subtotalDisp').textContent = fmt(subtotal);
+  $('grandTotalDisp').textContent = fmt(grand);
+
+  updatePreview({subtotal, taxAmt, discAmt, shipping, grand});
+  scheduleAutosave();
+}
+
+/* ---------------- PREVIEW SYNC ---------------- */
+function updatePreview(totals){
+  $('docCompanyName').textContent = $('companyName').value || 'Your Company';
+  const meta = [$('companyAddress').value, $('companyEmail').value, $('companyPhone').value, $('companyWebsite').value].filter(Boolean).join(' • ');
+  $('docCompanyMeta').textContent = meta || 'Add your company details';
+
+  $('docClientName').textContent = $('clientName').value || 'Client Name';
+  const cdetail = [$('clientAddress').value, $('clientEmail').value].filter(Boolean).join(' • ');
+  $('docClientDetail').textContent = cdetail || 'Client details appear here';
+
+  $('docInvNum').textContent = $('invoiceNumber').value || '—';
+  $('docIssueDate').textContent = $('issueDate').value ? formatDate($('issueDate').value) : '—';
+  $('docDueDate').textContent = $('dueDate').value ? formatDate($('dueDate').value) : '—';
+  $('docCurrency').textContent = $('currency').value;
+
+  $('docNotes').textContent = $('notesField').value || '—';
+  $('docTerms').textContent = $('termsField').value || '—';
+  $('docPayment').textContent = $('paymentInfo').value || '—';
+
+  const t = totals || {subtotal:0,taxAmt:0,discAmt:0,shipping:0,grand:0};
+  $('docSubtotal').textContent = money(t.subtotal);
+  $('docTax').textContent = money(t.taxAmt);
+  $('docDiscount').textContent = '-'+money(t.discAmt);
+  $('docShipping').textContent = money(t.shipping);
+  $('docGrandTotal').textContent = money(t.grand);
+
+  const body = $('docItemsBody');
+  body.innerHTML = '';
+  if(state.items.length===0){
+    body.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#a39d8c;padding:16px;">No items added yet</td></tr>';
+  } else {
+    state.items.forEach(i=>{
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${escapeHtml(i.desc)||'Untitled item'}</td><td style="text-align:right;">${i.qty}</td><td style="text-align:right;">${money(i.price)}</td><td>${money(i.qty*i.price)}</td>`;
+      body.appendChild(tr);
+    });
+  }
+
+  // QR
+  const qrBox = $('invoiceQrBox');
+  qrBox.innerHTML = '';
+  const qrVal = $('qrData').value.trim();
+  if(qrVal){
+    try{ new QRCode(qrBox, {text: qrVal, width:70, height:70, colorDark:'#141311', colorLight:'#ffffff'}); }catch(e){}
+  }
+}
+function formatDate(iso){
+  const d = new Date(iso+'T00:00:00');
+  if(isNaN(d)) return iso;
+  return d.toLocaleDateString(undefined,{year:'numeric',month:'short',day:'numeric'});
+}
+
+/* ---------------- LOGO UPLOAD ---------------- */
+const logoUploader = $('logoUploader');
+const logoInput = $('logoInput');
+function handleLogoFile(file){
+  if(!file || !file.type.startsWith('image/')) { toast('Please choose an image file','⚠️'); return; }
+  const reader = new FileReader();
+  reader.onload = e=>{
+    state.logo = e.target.result;
+    $('logoPreview').src = state.logo;
+    $('logoPreviewWrap').classList.add('show');
+    $('docLogo').src = state.logo;
+    $('docLogo').style.display = 'block';
+    const flash = $('logoSuccess');
+    flash.classList.remove('flash'); void flash.offsetWidth; flash.classList.add('flash');
+    scheduleAutosave();
+    toast('Logo uploaded');
+  };
+  reader.readAsDataURL(file);
+}
+logoUploader.addEventListener('click', e=>{ if(e.target.closest('.logo-actions')) return; logoInput.click(); });
+logoInput.addEventListener('change', e=> handleLogoFile(e.target.files[0]));
+['dragenter','dragover'].forEach(evt=>logoUploader.addEventListener(evt, e=>{ e.preventDefault(); logoUploader.classList.add('dragover'); }));
+['dragleave','drop'].forEach(evt=>logoUploader.addEventListener(evt, e=>{ e.preventDefault(); logoUploader.classList.remove('dragover'); }));
+logoUploader.addEventListener('drop', e=>{ const f=e.dataTransfer.files[0]; if(f) handleLogoFile(f); });
+$('logoReplaceBtn').addEventListener('click', e=>{ e.stopPropagation(); logoInput.click(); });
+$('logoRemoveBtn').addEventListener('click', e=>{
+  e.stopPropagation();
+  state.logo = null; logoInput.value='';
+  $('logoPreviewWrap').classList.remove('show');
+  $('docLogo').style.display='none';
+  scheduleAutosave();
+  toast('Logo removed','🗑️');
+});
+
+/* signature upload */
+$('signInput').addEventListener('change', e=>{
+  const file = e.target.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ev=>{
+    state.signature = ev.target.result;
+    $('signPreview').src = state.signature; $('signPreview').style.display='block';
+    $('signUploadText').textContent = 'Signature added — click to replace';
+    $('docSignature').src = state.signature; $('docSignature').style.display='inline-block';
+    scheduleAutosave();
+  };
+  reader.readAsDataURL(file);
+});
+
+/* ---------------- FORM LISTENERS ---------------- */
+['companyName','companyEmail','companyPhone','companyWebsite','companyAddress',
+ 'clientName','clientEmail','clientAddress','invoiceNumber','issueDate','dueDate',
+ 'currency','notesField','termsField','paymentInfo','qrData'].forEach(id=>{
+  $(id).addEventListener('input', ()=>recalc());
+  $(id).addEventListener('change', ()=>recalc());
+});
+['taxRate','discountRate','shippingFee'].forEach(id=> $(id).addEventListener('input', recalc));
+$('addItemBtn').addEventListener('click', ()=> addItem());
+
+/* ---------------- NEW INVOICE / RESET ---------------- */
+function newInvoice(){
+  state = {id:null, logo:null, signature:null, items:[]};
+  $('companyName').value=''; $('companyEmail').value=''; $('companyPhone').value=''; $('companyWebsite').value=''; $('companyAddress').value='';
+  $('clientName').value=''; $('clientEmail').value=''; $('clientAddress').value='';
+  $('invoiceNumber').value = generateInvoiceNumber();
+  const today = new Date();
+  const due = new Date(); due.setDate(due.getDate()+15);
+  $('issueDate').value = today.toISOString().slice(0,10);
+  $('dueDate').value = due.toISOString().slice(0,10);
+  $('currency').value = 'USD';
+  $('taxRate').value=0; $('discountRate').value=0; $('shippingFee').value=0;
+  $('notesField').value='Thank you for your business!';
+  $('termsField').value='Payment due within 15 days of invoice date.';
+  $('paymentInfo').value=''; $('qrData').value='';
+  clearItems();
+  $('logoPreviewWrap').classList.remove('show'); logoInput.value=''; $('docLogo').style.display='none';
+  $('signPreview').style.display='none'; $('signInput').value=''; $('signUploadText').textContent='Click to upload signature'; $('docSignature').style.display='none';
+  addItem({desc:'Design & Consultation', qty:1, price:500});
+  recalc();
+}
+
+/* ---------------- SAVE / LOAD ---------------- */
+function collectInvoiceData(){
+  return {
+    id: state.id || uid(),
+    logo: state.logo,
+    signature: state.signature,
+    company: {
+      name:$('companyName').value, email:$('companyEmail').value, phone:$('companyPhone').value,
+      website:$('companyWebsite').value, address:$('companyAddress').value
+    },
+    client: { name:$('clientName').value, email:$('clientEmail').value, address:$('clientAddress').value },
+    invoiceNumber:$('invoiceNumber').value, issueDate:$('issueDate').value, dueDate:$('dueDate').value,
+    currency:$('currency').value, items: state.items.map(i=>({desc:i.desc,qty:i.qty,price:i.price})),
+    taxRate:parseFloat($('taxRate').value)||0, discountRate:parseFloat($('discountRate').value)||0,
+    shippingFee:parseFloat($('shippingFee').value)||0,
+    notes:$('notesField').value, terms:$('termsField').value, paymentInfo:$('paymentInfo').value, qrData:$('qrData').value,
+    savedAt: new Date().toISOString()
+  };
+}
+function grandTotalOf(inv){
+  const subtotal = inv.items.reduce((s,i)=>s+i.qty*i.price,0);
+  return subtotal + subtotal*inv.taxRate/100 - subtotal*inv.discountRate/100 + inv.shippingFee;
+}
+function getSaved(){ return JSON.parse(localStorage.getItem('ig_invoices')||'[]'); }
+function setSaved(arr){ localStorage.setItem('ig_invoices', JSON.stringify(arr)); }
+
+function saveInvoice(showToast){
+  const data = collectInvoiceData();
+  state.id = data.id;
+  let list = getSaved();
+  const idx = list.findIndex(x=>x.id===data.id);
+  if(idx>-1) list[idx]=data; else list.unshift(data);
+  setSaved(list);
+  if(showToast!==false) toast('Invoice saved');
+  renderHistory();
+}
+function loadInvoiceIntoForm(inv){
+  state.id = inv.id; state.logo = inv.logo; state.signature = inv.signature;
+  $('companyName').value = inv.company.name; $('companyEmail').value = inv.company.email;
+  $('companyPhone').value = inv.company.phone; $('companyWebsite').value = inv.company.website;
+  $('companyAddress').value = inv.company.address;
+  $('clientName').value = inv.client.name; $('clientEmail').value = inv.client.email; $('clientAddress').value = inv.client.address;
+  $('invoiceNumber').value = inv.invoiceNumber; $('issueDate').value = inv.issueDate; $('dueDate').value = inv.dueDate;
+  $('currency').value = inv.currency; $('taxRate').value = inv.taxRate; $('discountRate').value = inv.discountRate;
+  $('shippingFee').value = inv.shippingFee; $('notesField').value = inv.notes; $('termsField').value = inv.terms;
+  $('paymentInfo').value = inv.paymentInfo; $('qrData').value = inv.qrData || '';
+
+  clearItems();
+  (inv.items||[]).forEach(i=>addItem(i));
+
+  if(inv.logo){ $('logoPreview').src=inv.logo; $('logoPreviewWrap').classList.add('show'); $('docLogo').src=inv.logo; $('docLogo').style.display='block'; }
+  else { $('logoPreviewWrap').classList.remove('show'); $('docLogo').style.display='none'; }
+
+  if(inv.signature){ $('signPreview').src=inv.signature; $('signPreview').style.display='block'; $('signUploadText').textContent='Signature added — click to replace'; $('docSignature').src=inv.signature; $('docSignature').style.display='inline-block'; }
+  else { $('signPreview').style.display='none'; $('signUploadText').textContent='Click to upload signature'; $('docSignature').style.display='none'; }
+
+  recalc();
+  switchView('editor');
+}
+
+/* ---------------- AUTOSAVE ---------------- */
+let autosaveTimer = null;
+function scheduleAutosave(){
+  const badge = $('autosaveBadge');
+  badge.querySelector('span:last-child').textContent = 'Saving...';
+  badge.querySelector('.autosave-dot').style.background = '#c9a961';
+  clearTimeout(autosaveTimer);
+  autosaveTimer = setTimeout(()=>{
+    if($('companyName').value || $('clientName').value || state.items.length){
+      saveInvoice(false);
+    }
+    badge.querySelector('span:last-child').textContent = 'Saved';
+    badge.querySelector('.autosave-dot').style.background = '#4caf7d';
+  }, 900);
+}
+
+/* ---------------- HISTORY VIEW ---------------- */
+function renderHistory(filter){
+  const grid = $('historyGrid');
+  let list = getSaved();
+  if(filter){
+    const f = filter.toLowerCase();
+    list = list.filter(inv =>
+      (inv.client.name||'').toLowerCase().includes(f) ||
+      (inv.invoiceNumber||'').toLowerCase().includes(f) ||
+      String(grandTotalOf(inv)).includes(f)
+    );
+  }
+  grid.innerHTML = '';
+  if(list.length===0){
+    grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      <h3>No invoices yet</h3><p>Create and save your first invoice to see it here.</p>
+    </div>`;
+    return;
+  }
+  list.forEach(inv=>{
+    const sym = CURRENCY_SYMBOLS[inv.currency]||'$';
+    const total = grandTotalOf(inv);
+    const card = document.createElement('div');
+    card.className = 'hist-card';
+    card.innerHTML = `
+      <div class="hist-top"><span class="hist-num">${escapeHtml(inv.invoiceNumber)}</span><span class="hist-total">${sym} ${fmt(total)}</span></div>
+      <div class="hist-client">${escapeHtml(inv.client.name)||'Untitled Client'}</div>
+      <div class="hist-date">Issued ${inv.issueDate? formatDate(inv.issueDate):'—'} • Due ${inv.dueDate? formatDate(inv.dueDate):'—'}</div>
+      <div class="hist-actions">
+        <button class="btn btn-sm" data-act="edit">Edit</button>
+        <button class="btn btn-sm" data-act="dup">Duplicate</button>
+        <button class="btn btn-sm" data-act="print">Print</button>
+        <button class="btn btn-sm btn-danger" data-act="del">Delete</button>
+      </div>
+    `;
+    card.querySelector('[data-act="edit"]').addEventListener('click', ()=> loadInvoiceIntoForm(inv));
+    card.querySelector('[data-act="dup"]').addEventListener('click', ()=>{
+      const copy = JSON.parse(JSON.stringify(inv));
+      copy.id = uid();
+      copy.invoiceNumber = generateInvoiceNumber();
+      copy.savedAt = new Date().toISOString();
+      const list2 = getSaved(); list2.unshift(copy); setSaved(list2);
+      toast('Invoice duplicated','📄');
+      renderHistory($('historySearch').value);
+    });
+    card.querySelector('[data-act="print"]').addEventListener('click', ()=>{ loadInvoiceIntoForm(inv); setTimeout(()=>window.print(), 300); });
+    card.querySelector('[data-act="del"]').addEventListener('click', ()=>{
+      if(!confirm('Delete this invoice permanently?')) return;
+      setSaved(getSaved().filter(x=>x.id!==inv.id));
+      toast('Invoice deleted','🗑️');
+      renderHistory($('historySearch').value);
+    });
+    grid.appendChild(card);
+  });
+}
+$('historySearch').addEventListener('input', e=> renderHistory(e.target.value));
+$('newInvoiceBtn').addEventListener('click', ()=>{ newInvoice(); switchView('editor'); });
+
+/* ---------------- GUIDES / BLOG ---------------- */
+const GUIDES = [
+  {
+    tag:'Getting Paid',
+    title:'7 Ways to Get Your Invoices Paid Faster',
+    excerpt:'Late payments are the top cash-flow killer for freelancers. These seven habits shrink the gap between sending an invoice and getting paid.',
+    body:`
+      <p>Late payments are consistently ranked as the number one cash-flow problem for freelancers and small agencies. The good news is that most delays aren't caused by clients being difficult — they're caused by invoices that make it easy to procrastinate. Fixing that is mostly about removing friction.</p>
+      <h4>1. Send the invoice the moment work is done</h4>
+      <p>Every day you wait to invoice is a day added to your payment timeline. Clients mentally file "recent" requests as urgent and older ones as background noise. Send it same-day, while the value you delivered is still fresh in their mind.</p>
+      <h4>2. State the due date, not just "net 30"</h4>
+      <p>"Net 30" requires the client to do math. A specific due date — "Due by August 14" — removes the calculation and creates a concrete deadline that's harder to mentally postpone.</p>
+      <h4>3. Make the amount impossible to misread</h4>
+      <p>Bold, large, unambiguous totals reduce the back-and-forth of "wait, is this right?" emails that quietly add days to payment cycles.</p>
+      <h4>4. Offer more than one payment method</h4>
+      <p>A client who prefers bank transfer but only sees a PayPal link may simply postpone rather than adapt. List two or three payment options directly in your invoice's payment section.</p>
+      <h4>5. Use a professional, numbered format</h4>
+      <p>Sequential invoice numbers (INV-2026-0001, 0002...) signal that you run an organized business and that someone, somewhere, is tracking whether this invoice gets paid.</p>
+      <h4>6. Follow up before it's overdue, not after</h4>
+      <p>A friendly reminder two days before the due date reads as helpful. A reminder two weeks after it's overdue reads as a complaint. Time your follow-ups on the front end.</p>
+      <h4>7. Keep a clean, searchable invoice history</h4>
+      <p>When a client disputes a payment or asks for a re-send, being able to pull up the exact invoice in seconds — rather than digging through email — keeps the conversation calm and fast.</p>
+    `
+  },
+  {
+    tag:'Basics',
+    title:'Invoice vs. Receipt: What\'s the Real Difference?',
+    excerpt:'They look similar and are often confused, but an invoice and a receipt serve completely different purposes in the payment lifecycle.',
+    body:`
+      <p>New freelancers often use the words "invoice" and "receipt" interchangeably, but they represent two different moments in a transaction, and mixing them up can cause real bookkeeping headaches.</p>
+      <h4>An invoice is a request</h4>
+      <p>An invoice is sent before payment. It's a formal request for money owed, listing what was delivered, the amount due, and the deadline for payment. Think of it as the bill.</p>
+      <h4>A receipt is a confirmation</h4>
+      <p>A receipt is issued after payment has been received. It confirms that a specific amount was paid, on a specific date, for a specific invoice. It's proof of a completed transaction, not a request for one.</p>
+      <h4>Why the distinction matters for your records</h4>
+      <p>Tax authorities and accountants treat these documents differently. Invoices track what you're owed (accounts receivable); receipts track what's actually been collected. Keeping both clearly labeled and stored makes year-end bookkeeping dramatically simpler and helps you spot unpaid invoices at a glance.</p>
+      <h4>A simple rule of thumb</h4>
+      <p>If money hasn't changed hands yet, you need an invoice. If it has, you need a receipt. Many businesses issue both for the same transaction — the invoice to request payment, and a short receipt afterward to confirm it landed.</p>
+    `
+  },
+  {
+    tag:'Best Practices',
+    title:'What Every Professional Invoice Should Include',
+    excerpt:'Missing a single field on an invoice — like a due date or invoice number — can delay payment by weeks. Here\'s the complete checklist.',
+    body:`
+      <p>An invoice is a legal and financial document, not just a friendly note asking for money. Missing even one detail can create confusion that delays payment or complicates your bookkeeping later. Here's what a complete, professional invoice needs.</p>
+      <h4>Identification details</h4>
+      <p>A unique invoice number, the issue date, and the due date. These three fields alone prevent duplicate payments and make your records searchable months later.</p>
+      <h4>Both parties' information</h4>
+      <p>Your business name, address, and contact details, along with the client's name and billing address. This matters for tax purposes as much as for professionalism.</p>
+      <h4>An itemized breakdown</h4>
+      <p>Rather than a single lump sum, list each product or service separately with quantity and unit price. This transparency reduces disputes and helps clients approve invoices internally without needing to ask you clarifying questions.</p>
+      <h4>Clear totals</h4>
+      <p>Subtotal, any taxes, discounts, shipping charges, and a final grand total — each shown as its own line, not buried in the description.</p>
+      <h4>Payment instructions</h4>
+      <p>Bank details, accepted payment methods, and any reference number the client should include with their payment so it's easy to match to your records.</p>
+      <h4>Terms and notes</h4>
+      <p>Your payment terms (e.g. due within 15 days), late fee policy if you have one, and a short thank-you note. This section is also where you can mention return or cancellation policies if relevant.</p>
+    `
+  },
+  {
+    tag:'Pricing',
+    title:'How to Handle Tax, Discounts, and Shipping on an Invoice',
+    excerpt:'Getting the order of operations wrong on tax and discount calculations is a surprisingly common invoicing mistake. Here\'s how to do it correctly.',
+    body:`
+      <p>Tax, discounts, and shipping charges each interact with your subtotal differently, and applying them in the wrong order can quietly under- or over-charge a client.</p>
+      <h4>Calculate from the subtotal, not from each other</h4>
+      <p>Both tax and discount percentages should generally be calculated against the original subtotal of goods or services — not against each other. If you apply a discount and then calculate tax on the discounted amount, you'll want to be explicit about that in your terms, since tax authorities in different regions handle this differently.</p>
+      <h4>Shipping is typically added last</h4>
+      <p>Shipping and handling charges are usually flat fees added after tax and discount have been applied, since they represent a separate cost rather than a percentage of the goods sold.</p>
+      <h4>Show your work</h4>
+      <p>Rather than presenting only a final total, break out subtotal, tax amount, discount amount, and shipping as separate line items. This lets the client verify your math at a glance and dramatically reduces "can you explain this total?" emails.</p>
+      <h4>Be consistent invoice to invoice</h4>
+      <p>Whatever method you choose, apply it the same way across every invoice you send. Consistency builds trust and makes your own bookkeeping far easier to reconcile at tax time.</p>
+    `
+  },
+  {
+    tag:'Freelancing',
+    title:'5 Invoicing Mistakes That Make Freelancers Look Unprofessional',
+    excerpt:'Small inconsistencies in your invoices can quietly undermine the professional image you\'ve worked hard to build. Watch for these.',
+    body:`
+      <p>Clients form an impression of how seriously you run your business partly from how your invoices look and behave. These five mistakes are common — and easy to fix.</p>
+      <h4>1. Inconsistent invoice numbering</h4>
+      <p>Skipping numbers, reusing them, or using random formats makes it look like you don't have an organized system, which can quietly raise doubts about your reliability elsewhere too.</p>
+      <h4>2. Vague line-item descriptions</h4>
+      <p>"Services rendered — $1,200" tells the client nothing. Specific line items like "Homepage redesign (12 hrs) — $1,200" show exactly what they're paying for and reduce the chance of a dispute.</p>
+      <h4>3. No clear due date</h4>
+      <p>Leaving payment terms ambiguous signals that you're not tracking your own cash flow closely — which, fairly or not, can make clients less urgent about paying you.</p>
+      <h4>4. Sending invoices from inconsistent formats or templates</h4>
+      <p>Switching invoice styles between projects makes your business look improvised rather than established. A consistent, branded template — with your logo, colors, and layout — builds recognition and trust over time.</p>
+      <h4>5. Not following up at all</h4>
+      <p>Some freelancers avoid follow-ups out of politeness, but a calm, professional reminder is standard business practice, not an imposition. Clients expect it, and its absence can actually make payment feel less urgent.</p>
+    `
+  },
+  {
+    tag:'Small Business',
+    title:'Choosing the Right Payment Terms for Your Business',
+    excerpt:'Net 15, Net 30, due on receipt — the payment terms you choose directly affect your cash flow. Here\'s how to pick the right ones.',
+    body:`
+      <p>Payment terms aren't just a formality at the bottom of your invoice — they directly shape your cash flow and your relationship with clients. Choosing them thoughtfully matters more than most new business owners expect.</p>
+      <h4>Due on receipt</h4>
+      <p>Best for one-off projects, small transactions, or new clients without an established payment history. It maximizes your cash flow speed but can feel rigid for larger corporate clients used to standard billing cycles.</p>
+      <h4>Net 15</h4>
+      <p>A middle-ground option that gives clients two weeks while still keeping your receivables relatively short. Common for ongoing freelance and agency relationships.</p>
+      <h4>Net 30</h4>
+      <p>The most widely recognized standard in B2B invoicing, especially with larger companies whose internal accounts-payable processes run on monthly cycles. Expect this to be requested by enterprise clients regardless of what you originally propose.</p>
+      <h4>Matching terms to the relationship</h4>
+      <p>New clients or one-time projects generally warrant shorter, stricter terms. Long-term, reliable clients can reasonably be offered more flexible terms as a gesture of trust — you can always adjust as the relationship develops.</p>
+      <h4>Whatever you choose, put it in writing</h4>
+      <p>Verbally agreed terms are easy to forget or dispute. Stating your payment terms clearly on every invoice protects both sides and gives you firm footing if a payment does run late.</p>
+    `
+  }
+];
+
+function renderGuidesGrid(){
+  const grid = $('guidesGrid');
+  grid.innerHTML = '';
+  GUIDES.forEach((g, idx)=>{
+    const card = document.createElement('div');
+    card.className = 'guide-card';
+    card.innerHTML = `
+      <span class="guide-tag">${escapeHtml(g.tag)}</span>
+      <h3>${escapeHtml(g.title)}</h3>
+      <p>${escapeHtml(g.excerpt)}</p>
+      <span class="guide-read">Read guide →</span>
+    `;
+    card.addEventListener('click', ()=> openGuide(idx));
+    grid.appendChild(card);
+  });
+}
+function openGuide(idx){
+  const g = GUIDES[idx];
+  $('guideArticleBody').innerHTML = `
+    <span class="card-eyebrow">${escapeHtml(g.tag)}</span>
+    <h2>${escapeHtml(g.title)}</h2>
+    <div class="guide-meta">Invoice Generator Team • Updated January 2026 • ~4 min read</div>
+    ${g.body}
+  `;
+  $('guidesList').style.display = 'none';
+  $('guidesReader').style.display = 'block';
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+$('guideBackBtn').addEventListener('click', ()=>{
+  $('guidesReader').style.display = 'none';
+  $('guidesList').style.display = 'block';
+});
+renderGuidesGrid();
+
+/* ---------------- TABS ---------------- */
+function switchView(name){
+  document.querySelectorAll('.tab').forEach(t=> t.classList.toggle('active', t.dataset.view===name));
+  document.querySelectorAll('.view').forEach(v=> v.classList.remove('active'));
+  $('view-'+name).classList.add('active');
+  if(name==='history') renderHistory($('historySearch').value);
+  if(name==='guides'){ $('guidesReader').style.display='none'; $('guidesList').style.display='block'; }
+}
+document.querySelectorAll('.tab').forEach(t=> t.addEventListener('click', ()=> switchView(t.dataset.view)));
+document.querySelectorAll('.footer-link').forEach(a=> a.addEventListener('click', e=>{ e.preventDefault(); switchView(a.dataset.view); window.scrollTo({top:0,behavior:'smooth'}); }));
+
+/* ---------------- SAVE / PRINT / PDF BUTTONS ---------------- */
+$('saveBtn').addEventListener('click', ()=> saveInvoice(true));
+$('printBtn').addEventListener('click', ()=> window.print());
+
+$('downloadPdfBtn').addEventListener('click', async ()=>{
+  const btn = $('downloadPdfBtn');
+  const original = btn.innerHTML;
+  btn.innerHTML = '<svg class="spin" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#171308" stroke-width="2.5"><path d="M21 12a9 9 0 11-6.219-8.56"/></svg> Generating...';
+  btn.disabled = true;
+  try{
+    const node = $('invoiceDoc');
+    const badge = node.querySelector('.watermark-badge');
+    badge.style.visibility = 'hidden';
+    const canvas = await html2canvas(node, {scale:3, backgroundColor:'#ffffff', useCORS:true});
+    badge.style.visibility = 'visible';
+    const imgData = canvas.toDataURL('image/png', 1.0);
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF('p','mm','a4');
+    const pageW = 210, pageH = 297;
+    const imgW = pageW;
+    const imgH = (canvas.height * imgW) / canvas.width;
+    let renderH = imgH, y = 0;
+    if(imgH <= pageH){
+      pdf.addImage(imgData,'PNG',0,0,imgW,imgH);
+    } else {
+      // fit to one page by scaling down if content taller than A4
+      const scale = pageH/imgH;
+      pdf.addImage(imgData,'PNG',0,0,imgW*1,imgH*1);
+    }
+    const num = $('invoiceNumber').value || 'invoice';
+    pdf.save(num+'.pdf');
+    toast('HD PDF downloaded');
+  }catch(err){
+    console.error(err);
+    toast('Could not generate PDF','⚠️');
+  }finally{
+    btn.innerHTML = original;
+    btn.disabled = false;
+  }
+});
+
+/* ---------------- DARK MODE ---------------- */
+function applyTheme(theme){
+  document.body.dataset.theme = theme;
+  localStorage.setItem('ig_theme', theme);
+  const icon = $('themeIcon');
+  icon.innerHTML = theme==='dark'
+    ? '<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>'
+    : '<path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>';
+}
+$('themeToggle').addEventListener('click', ()=>{
+  applyTheme(document.body.dataset.theme === 'dark' ? 'light' : 'dark');
+});
+applyTheme(localStorage.getItem('ig_theme') || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark':'light'));
+
+/* ---------------- INIT ---------------- */
+function init(){
+  $('invoiceNumber').value = generateInvoiceNumber();
+  const today = new Date(); const due = new Date(); due.setDate(due.getDate()+15);
+  $('issueDate').value = today.toISOString().slice(0,10);
+  $('dueDate').value = due.toISOString().slice(0,10);
+  $('notesField').value = 'Thank you for your business!';
+  $('termsField').value = 'Payment due within 15 days of invoice date.';
+  addItem({desc:'Design & Consultation', qty:1, price:500});
+  addItem({desc:'Development Services', qty:10, price:80});
+  recalc();
+  renderHistory();
+}
+init();
+
+})();
+</script>
+</body>
+</html>
