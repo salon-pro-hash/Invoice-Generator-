@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://salon-pro-hash.github.io/Invoice-Generator-/sitemap.xml
